@@ -54,6 +54,50 @@ Python 3.8 or higher is required !
 
 <hr/>
 
+# QuickStart
+
+```python
+from discord_cooldown.cooldown import Cooldown
+import discord
+from discord.ext import commands
+
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix="&", intents=intents)
+
+
+@client.event
+async def on_ready():
+    print("Bot's online !")
+
+
+@Cooldown().cooldown(1, 2 * 60)
+@client.command()
+async def test(ctx):
+    """
+    Returns an error: commands.CommandOnCooldown if it's on cooldown
+    """
+    await ctx.send("Hello world !")
+
+
+@Cooldown().cooldown(1, 0, commands.BucketType.guild, reset_per_day=True)
+@client.command(aliases=['sf'])
+async def serverinfo(ctx):
+    guild = ctx.guild
+    em = discord.Embed(
+        title="Server Info",
+        description=f"Server Name: {guild.name}\n"
+                    f"Total Members: {guild.member_count}\n"
+                    f"Owner: {guild.owner.mention}"
+    )
+
+    await ctx.reply(embed=em, mention_author=False)
+
+
+client.run(TOKEN)
+```
+
+<hr/>
+
 # Project Links
 
 You can get support/help/guidance from below social-media links
