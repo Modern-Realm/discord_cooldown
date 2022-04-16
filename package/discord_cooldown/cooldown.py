@@ -16,7 +16,7 @@ class Cooldown:
         For examples: https://github.com/Modern-Realm/discord_cooldown/tree/main/Examples
 
         :param database: takes MySQL or SQlite
-        :param timezone: add no.of hours you need to get your timezone
+        :param timezone: add/ remove no.of hours using datetime.timedelta you need to get your timezone
 
         :returns: cooldown: commands.check
         """

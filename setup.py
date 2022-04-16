@@ -21,7 +21,7 @@ setuptools.setup(
     version=version,
     author="P. Sai Keerthan Reddy",
     author_email="saikeerthan.keerthan.9@gmail.com",
-    description="Custom CooldownsDB for discord Bot commands",
+    description="Custom Cooldowns for discord Bot commands",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Modern-Realm/discord_cooldown",

@@ -70,6 +70,15 @@ async def on_ready():
     print("Bot's online !")
 
 
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        em = discord.Embed(description=f"This command is on cooldown\n"
+                                       f"Retry after {error.retry_after}")
+
+        return await ctx.reply(embed=em, mention_author=False)
+
+
 @Cooldown().cooldown(1, 2 * 60)
 @client.command()
 async def test(ctx):
