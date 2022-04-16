@@ -1,4 +1,4 @@
-# Package Name: [discord_cooldown](https://pypi.org/project/discord-btns-menus/)
+# Package Name: [discord_cooldown](https://pypi.org/project/discord-cooldown/)
 
 #### A responsive package for command cooldowns
 
