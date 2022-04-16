@@ -6,7 +6,6 @@
 
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
-[![CodeQL](https://github.com/Modern-Realm/discord_cooldown/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Modern-Realm/discord_cooldown/actions/workflows/codeql.yml)
 [![Generic badge](https://img.shields.io/badge/Python-3.8-blue.svg)](https://shields.io/)
 [![GitHub license](https://badgen.net/github/license/Naereen/Strapdown.js)](https://github.com/Naereen/StrapDown.js/blob/master/LICENSE)
 [![Windows](https://svgshare.com/i/ZhY.svg)](https://svgshare.com/i/ZhY.svg)
