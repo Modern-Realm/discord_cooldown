@@ -22,21 +22,21 @@ Python 3.8 or higher is required !
 
 ```shell
 # Linux/macOS
-  python3 -m pip install discord-btns-menus
+  python3 -m pip install discord-cooldown
 
 # Windows
   # Method-1:
-    py -3 -m pip install discord-btns-menus
+    py -3 -m pip install discord-cooldown
     # or
-    python -m pip install discord-btns-menus
+    python -m pip install discord-cooldown
   # Method-2:
-    pip install discord-btns-menus
+    pip install discord-cooldown
 
 # Using GIT for ALPHA or BETA Versions
   # Method-1:
-    pip install git+https://github.com/Modern-Realm/discord_btns_menus.git
+    pip install git+https://github.com/Modern-Realm/discord_cooldown.git
   # Method-2:
-    pip install -U git+https://github.com/Modern-Realm/discord_btns_menus
+    pip install -U git+https://github.com/Modern-Realm/discord_cooldown
 ```
 
 <hr/>
