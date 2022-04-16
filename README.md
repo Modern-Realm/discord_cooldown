@@ -16,10 +16,49 @@
 
 <hr/>
 
+# Installation
+
+Python 3.8 or higher is required !
+
+```shell
+# Linux/macOS
+  python3 -m pip install discord-btns-menus
+
+# Windows
+  # Method-1:
+    py -3 -m pip install discord-btns-menus
+    # or
+    python -m pip install discord-btns-menus
+  # Method-2:
+    pip install discord-btns-menus
+
+# Using GIT for ALPHA or BETA Versions
+  # Method-1:
+    pip install git+https://github.com/Modern-Realm/discord_btns_menus.git
+  # Method-2:
+    pip install -U git+https://github.com/Modern-Realm/discord_btns_menus
+```
+
+<hr/>
+
+# REQUIRED DEPENDENCIES
+
+> #### You can use ANY ONE of the below Package
+
+- ## [py-cord](https://github.com/Pycord-Development/pycord)
+- ## [nextcord](https://github.com/nextcord/nextcord)
+- ## [discord.pyV2.0](https://github.com/Rapptz/discord.py)
+- ## [disnake](https://github.com/DisnakeDev/disnake)
+  `For disnake you should Refactor/ Shim all discord terms to disnake terms to make Package work`
+
+> <b>Note:</b> Don't install more than one **DEPENDENCY !**
+
+<hr/>
+
 # Project Links
 
 You can get support/help/guidance from below social-media links
 
 - [Home Page](https://github.com/Modern-Realm)
 - [Official Discord Server](https://discord.gg/GVMWx5EaAN)
-- [PyPi Package](https://github.com/Modern-Realm)
+- [PyPi Package](https://pypi.org/project/discord-cooldown/)

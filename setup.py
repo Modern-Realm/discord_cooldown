@@ -17,7 +17,7 @@ with open("package/discord_cooldown/__init__.py") as f:
                            "go to https://github.com/Modern-Realm/discord_cooldown for more info ...")
 
 setuptools.setup(
-    name="discord_cooldown",
+    name="discord-cooldown",
     version=version,
     author="P. Sai Keerthan Reddy",
     author_email="saikeerthan.keerthan.9@gmail.com",
