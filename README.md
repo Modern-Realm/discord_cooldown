@@ -64,8 +64,8 @@ For better stability install package from [GitHub](https://github.com/Modern-Rea
 
 #### Other Required Dependencies
 
-- ### [mysql-connector-python](https://pypi.org/project/psycopg2/)
-- ### [psycopg2](https://pypi.org/project/mysql-connector-python/)
+- [mysql-connector-python](https://pypi.org/project/psycopg2/)
+- [psycopg2](https://pypi.org/project/mysql-connector-python/)
 
 <hr/>
 
