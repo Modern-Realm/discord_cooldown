@@ -9,12 +9,12 @@ from discord.ext.commands import BucketType
 
 
 class SQlite:
-    def __init__(self, filename: str = None, table_name: str = "Cooldowns"):
+    def __init__(self, filename: str = None, table_name: str = "cooldowns"):
         """
         Use this to store the cooldown commands data in database files with `.db` extension
 
         :param filename: takes the filename or path of the file
-        :param table_name: By default it's Cooldowns, if provided the table will be created with the given name
+        :param table_name: By default it's cooldowns, if provided the table will be created with the given name
         """
 
         self.filename = "CustomCooldowns.db" if filename is None else filename
@@ -32,7 +32,7 @@ class MySQL:
         :param db_name: Name of the database/ schema
         :param user: Name of the user/ root who has access to the database/ schema
         :param passwd: Password of the given user
-        :param table_name: By default it's Cooldowns, if provided the table will be created with the given name
+        :param table_name: By default it's cooldowns, if provided the table will be created with the given name
         """
 
         self.DB_HOST: str = host
@@ -55,7 +55,7 @@ class PostgreSQL:
         :param user: Name of the user/ root who has access to the database/ schema
         :param passwd: Password of the given user
         :param port: Port of the PostgreSQL server
-        :param table_name: By default it's Cooldowns, if provided the table will be created with the given name
+        :param table_name: By default it's cooldowns, if provided the table will be created with the given name
         """
 
         self.DB_HOST: str = host
@@ -163,7 +163,7 @@ class CooldownsDB:
         cursor = db.cursor()
 
         try:
-            cmd_rate, cmd_per, cmd_cd = self.get_cd(user, mode)
+            cmd_rate, cmd_per, cmd_cd = await self.get_cd(user, mode)
         except:
             cmd_rate = cmd_per = 0
             cmd_cd = None

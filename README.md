@@ -46,7 +46,7 @@ Python 3.8 or higher is required !
     pip install -U git+https://github.com/Modern-Realm/discord_cooldown
 ```
 
-For better stability install package from [GitHub](https://github.com/Modern-Realm/discord_cooldown) using **`GIT`**
+**Note:** For better stability install package from [GitHub](https://github.com/Modern-Realm/discord_cooldown) using **`GIT`**
 
 <hr/>
 
@@ -62,7 +62,7 @@ For better stability install package from [GitHub](https://github.com/Modern-Rea
 
 > <b>Note:</b> Don't install more than one **DEPENDENCY !**
 
-#### Other Required Dependencies
+#### Other Dependencies
 
 - [mysql-connector-python](https://pypi.org/project/mysql-connector-python/)
 - [psycopg2](https://pypi.org/project/psycopg2/)
