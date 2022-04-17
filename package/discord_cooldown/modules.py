@@ -54,6 +54,7 @@ class PostgreSQL:
         :param db_name: Name of the database/ schema
         :param user: Name of the user/ root who has access to the database/ schema
         :param passwd: Password of the given user
+        :param port: Port of the PostgreSQL server
         :param table_name: By default it's Cooldowns, if provided the table will be created with the given name
         """
 
