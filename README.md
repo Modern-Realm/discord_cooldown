@@ -1,6 +1,6 @@
 # Package Name: [discord_cooldown](https://pypi.org/project/discord-cooldown/)
 
-#### A responsive package for command cooldowns
+#### A responsive package for Bot command cooldowns
 
 #### • With this package you can create the command cooldowns which will not get reset whenever the bot re-run
 
@@ -12,6 +12,14 @@
 [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg)
 
 ### Join [Official Discord Server](https://discord.gg/GVMWx5EaAN) for more guidance !
+
+<hr/>
+
+# Features
+
+- Cooldowns of Bot commands are stored in a **DATABASE**
+- Available Databases **MySQL, PostgreSQL and Sqlite`(or Sqlite3)`**
+- **asynchronous** functions are used throughout the module
 
 <hr/>
 
@@ -38,11 +46,13 @@ Python 3.8 or higher is required !
     pip install -U git+https://github.com/Modern-Realm/discord_cooldown
 ```
 
+For better stability install package from [GitHub](https://github.com/Modern-Realm/discord_cooldown) using **`GIT`**
+
 <hr/>
 
 # REQUIRED DEPENDENCIES
 
-> #### You can use ANY ONE of the below Package
+> #### You can use ANY ONE of the below discord API Package
 
 - ## [py-cord](https://github.com/Pycord-Development/pycord)
 - ## [nextcord](https://github.com/nextcord/nextcord)
@@ -51,6 +61,11 @@ Python 3.8 or higher is required !
   `For disnake you should Refactor/ Shim all discord terms to disnake terms to make Package work`
 
 > <b>Note:</b> Don't install more than one **DEPENDENCY !**
+
+#### Other Required Dependencies
+
+- ### [mysql-connector-python](https://pypi.org/project/psycopg2/)
+- ### [psycopg2](https://pypi.org/project/mysql-connector-python/)
 
 <hr/>
 
@@ -74,7 +89,7 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         em = discord.Embed(description=f"This command is on cooldown\n"
-                                       f"Retry after {error.retry_after}")
+                                       f"Retry after `{error.retry_after}` seconds")
 
         return await ctx.reply(embed=em, mention_author=False)
 

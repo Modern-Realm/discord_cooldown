@@ -1,6 +1,7 @@
 import discord
 import sqlite3
 import mysql.connector as mysql
+import psycopg2
 
 from typing import Optional, Union, Tuple
 from datetime import datetime
@@ -23,7 +24,7 @@ class SQlite:
 
 
 class MySQL:
-    def __init__(self, host: str, db_name: str, user: str, passwd: str, *, table_name: str = "Cooldowns"):
+    def __init__(self, host: str, db_name: str, user: str, passwd: str, *, table_name: str = "cooldowns"):
         """
         Use this to store the cooldown commands data in MySQL database
 
@@ -44,15 +45,38 @@ class MySQL:
                                                passwd=self.DB_PASSWD, database=self.DB_NAME)
 
 
+class PostgreSQL:
+    def __init__(self, host: str, db_name: str, user: str, passwd: str, port: str, *, table_name: str = "cooldowns"):
+        """
+        Use this to store the cooldown commands data in PostgreSQL database
+
+        :param host: Where the PostgreSQL server is being hosted
+        :param db_name: Name of the database/ schema
+        :param user: Name of the user/ root who has access to the database/ schema
+        :param passwd: Password of the given user
+        :param table_name: By default it's Cooldowns, if provided the table will be created with the given name
+        """
+
+        self.DB_HOST: str = host
+        self.DB_PORT: str = port
+        self.DB_NAME: str = db_name
+        self.DB_USER: str = user
+        self.DB_PASSWD: str = passwd
+        self.table_name = table_name
+
+        self.connector = lambda: psycopg2.connect(host=self.DB_HOST, port=self.DB_PORT, user=self.DB_USER,
+                                                  passwd=self.DB_PASSWD, database=self.DB_NAME)
+
+
 class CooldownsDB:
-    def __init__(self, database: Union[MySQL, SQlite], /):
+    def __init__(self, database: Union[MySQL, SQlite, PostgreSQL], /):
         if database.connector is None:
             raise RuntimeError("Something went wrong !")
         else:
             self.database = database
             self.table_name = database.table_name
 
-    def update_cooldowns(self):
+    async def update_cooldowns(self):
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -62,8 +86,8 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def open_cd(self, user: Union[discord.Member, discord.Guild]):
-        self.update_cooldowns()
+    async def open_cd(self, user: Union[discord.Member, discord.Guild]):
+        await self.update_cooldowns()
 
         db = self.database.connector()
         cursor = db.cursor()
@@ -77,7 +101,7 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def add_column(self, column_name: str):
+    async def add_column(self, column_name: str):
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -90,9 +114,10 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def get_cd(self, user: Union[discord.Member, discord.Guild], mode: str) -> Optional[Tuple[int, int, datetime]]:
-        self.open_cd(user)
-        self.add_column(mode)
+    async def get_cd(self, user: Union[discord.Member, discord.Guild],
+                     mode: str) -> Optional[Tuple[int, int, datetime]]:
+        await self.open_cd(user)
+        await self.add_column(mode)
 
         db = self.database.connector()
         cursor = db.cursor()
@@ -113,9 +138,10 @@ class CooldownsDB:
 
         return rate, per, cooldown
 
-    def create_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int, per: int, cooldown: str):
-        self.open_cd(user)
-        self.add_column(mode)
+    async def create_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int, per: int,
+                        cooldown: str):
+        await self.open_cd(user)
+        await self.add_column(mode)
 
         db = self.database.connector()
         cursor = db.cursor()
@@ -127,10 +153,10 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def update_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int = None, per: int = None,
-                  cooldown: str = None):
-        self.open_cd(user)
-        self.add_column(mode)
+    async def update_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int = None,
+                        per: int = None, cooldown: str = None):
+        await self.open_cd(user)
+        await self.add_column(mode)
 
         db = self.database.connector()
         cursor = db.cursor()
@@ -159,8 +185,9 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def reset_cd(self, user: Union[discord.Member, discord.Guild], mode: str):
-        self.open_cd(user)
+    async def reset_cd(self, user: Union[discord.Member, discord.Guild], mode: str):
+        await self.open_cd(user)
+        await self.add_column(mode)
 
         db = self.database.connector()
         cursor = db.cursor()

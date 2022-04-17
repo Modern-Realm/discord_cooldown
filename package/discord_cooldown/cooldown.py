@@ -1,4 +1,5 @@
-from discord_cooldown.modules import SQlite, MySQL, CooldownsDB, BucketTypes
+from discord_cooldown.modules import SQlite, MySQL, PostgreSQL
+from discord_cooldown.modules import CooldownsDB, BucketTypes
 
 import discord
 
@@ -9,13 +10,14 @@ from discord.ext import commands
 
 
 class Cooldown:
-    def __init__(self, database: Union[MySQL, SQlite] = SQlite(), *, timezone: timedelta = timedelta(hours=0)):
+    def __init__(self, database: Union[MySQL, SQlite, PostgreSQL] = SQlite(), *,
+                 timezone: timedelta = timedelta(hours=0)):
         """
         It overwrites commands.cooldown
 
         For examples: https://github.com/Modern-Realm/discord_cooldown/tree/main/Examples
 
-        :param database: takes MySQL or SQlite
+        :param database: takes PostgreSQL, MySQL or SQlite
         :param timezone: add/ remove no.of hours using datetime.timedelta you need to get your timezone
 
         :returns: cooldown: commands.check
@@ -63,7 +65,7 @@ class Cooldown:
         self.type = type_
         self.reset = reset_per_day
 
-        def predicate(context) -> bool:
+        async def predicate(context) -> bool:
             self.user = context.author
             self.command_name = context.command.name
 
@@ -71,22 +73,22 @@ class Cooldown:
                 self.user = context.guild
 
             try:
-                cmd_rate, cmd_per, cmd_cd = self.CD.get_cd(self.user, self.command_name)
+                cmd_rate, cmd_per, cmd_cd = await self.CD.get_cd(self.user, self.command_name)
             except:
                 cmd_rate = cmd_per = 0
                 cmd_cd = None
 
             if cmd_cd is None:
-                self.set_CD()
+                await self.set_CD()
 
             try:
-                cmd_rate, cmd_per, cmd_cd = self.CD.get_cd(self.user, self.command_name)
+                cmd_rate, cmd_per, cmd_cd = await self.CD.get_cd(self.user, self.command_name)
             except:
                 cmd_rate = cmd_per = 0
                 cmd_cd = None
 
             if cmd_per < cmd_rate:
-                self.update_CD()
+                await self.update_CD()
                 return True
             else:
                 if cmd_cd is None:
@@ -95,9 +97,9 @@ class Cooldown:
                     cur_time = datetime.utcnow() + self.timezone
                     cur_time = cur_time.replace(microsecond=0)
                     if cur_time > cmd_cd:
-                        self.clear_CD()
-                        self.set_CD()
-                        self.update_CD()
+                        await self.clear_CD()
+                        await self.set_CD()
+                        await self.update_CD()
                         return True
                     else:
                         left_time = (cmd_cd - cur_time).total_seconds()
@@ -109,7 +111,7 @@ class Cooldown:
 
         return commands.check(predicate)
 
-    def set_CD(self):
+    async def set_CD(self):
         cur_time = datetime.utcnow() + self.timezone
         cur_time = cur_time.replace(microsecond=0)
         if self.reset:
@@ -118,10 +120,10 @@ class Cooldown:
             cd_time = cur_time + timedelta(seconds=self.per)
         cd_time = cd_time.strftime(self.default_format)
 
-        self.CD.create_cd(self.user, self.command_name,
-                          rate=self.rate, per=0, cooldown=cd_time)
+        await self.CD.create_cd(self.user, self.command_name,
+                                rate=self.rate, per=0, cooldown=cd_time)
 
-    def update_CD(self):
+    async def update_CD(self):
         cur_time = datetime.utcnow() + self.timezone
         cur_time = cur_time.replace(microsecond=0)
         if self.reset:
@@ -130,7 +132,7 @@ class Cooldown:
             cd_time = cur_time + timedelta(seconds=self.per)
         cd_time = cd_time.strftime(self.default_format)
 
-        self.CD.update_cd(self.user, self.command_name, per=+1, cooldown=cd_time)
+        await self.CD.update_cd(self.user, self.command_name, per=+1, cooldown=cd_time)
 
-    def clear_CD(self):
-        self.CD.reset_cd(self.user, self.command_name)
+    async def clear_CD(self):
+        await self.CD.reset_cd(self.user, self.command_name)
