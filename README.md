@@ -18,7 +18,7 @@
 # Features
 
 - Cooldowns of Bot commands are stored in a **DATABASE**
-- Available Databases **MySQL, PostgreSQL and Sqlite`(or Sqlite3)`**
+- Available Databases **MySQL, PostgreSQL and Sqlite`(Sqlite3)`**
 - **asynchronous** functions are used throughout the module
 
 <hr/>
