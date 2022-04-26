@@ -41,7 +41,7 @@ Python 3.8 or higher is required !
 
 # Using GIT for ALPHA or BETA Versions
   # Method-1:
-    pip install git+https://github.com/Modern-Realm/discord_cooldown.git
+    pip install git+https://github.com/Modern-Realm/discord_cooldown
   # Method-2:
     pip install -U git+https://github.com/Modern-Realm/discord_cooldown
 ```
