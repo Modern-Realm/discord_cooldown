@@ -60,7 +60,7 @@ class Cooldown:
         """
 
         self.rate = rate
-        self.per = per - 1
+        self.per = per
         self.type = type_
         self.reset = reset_per_day
 
@@ -116,7 +116,7 @@ class Cooldown:
 
         return commands.check(predicate)
 
-    async def set_CD(self) -> Tuple[int, int, datetime]:
+    def set_CD(self) -> Tuple[int, int, datetime]:
         cur_time = (datetime.utcnow() + self.timezone).replace(microsecond=0)
         if self.reset:
             cd_time_ = (cur_time + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)

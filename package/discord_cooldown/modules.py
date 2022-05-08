@@ -20,7 +20,7 @@ def run_async(target: Callable, *args, **kwargs) -> Optional[Any]:
             super().__init__()
 
         def run(self):
-            self.result = asyncio.run(self.func(*self.args, **self.kwargs))
+            self.result = self.func(*self.args, **self.kwargs)
 
     thread = RunThread(target)
     thread.start()
@@ -97,7 +97,7 @@ class CooldownsDB:
             self.database = database
             self.table_name = database.table_name
 
-    async def update_cooldowns(self):
+    def update_cooldowns(self):
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -107,7 +107,7 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    async def open_cd(self, user: Union[discord.Member, discord.Guild]):
+    def open_cd(self, user: Union[discord.Member, discord.Guild]):
         run_async(self.update_cooldowns)
 
         db = self.database.connector()
@@ -122,7 +122,7 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    async def add_column(self, column_name: str):
+    def add_column(self, column_name: str):
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -135,8 +135,8 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    async def get_cd(self, user: Union[discord.Member, discord.Guild],
-                     mode: str) -> Optional[Tuple[int, int, Optional[datetime]]]:
+    def get_cd(self, user: Union[discord.Member, discord.Guild],
+               mode: str) -> Optional[Tuple[int, int, Optional[datetime]]]:
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -159,8 +159,8 @@ class CooldownsDB:
 
         return rate, per, cooldown
 
-    async def create_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int, per: int,
-                        cooldown: str):
+    def create_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int, per: int,
+                  cooldown: str):
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -171,13 +171,13 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    async def update_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int = None,
-                        per: int = None, cooldown: str = None):
+    def update_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int = None,
+                  per: int = None, cooldown: str = None):
         db = self.database.connector()
         cursor = db.cursor()
 
         try:
-            cmd_rate, cmd_per, cmd_cd = await self.get_cd(user, mode)
+            cmd_rate, cmd_per, cmd_cd = run_async(self.get_cd, user, mode)
         except:
             cmd_rate = cmd_per = 0
             cmd_cd = None
@@ -200,7 +200,7 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    async def reset_cd(self, user: Union[discord.Member, discord.Guild], mode: str):
+    def reset_cd(self, user: Union[discord.Member, discord.Guild], mode: str):
         db = self.database.connector()
         cursor = db.cursor()
 
