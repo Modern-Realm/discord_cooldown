@@ -216,8 +216,7 @@ class BucketTypes(BucketType):
     """
     Used to overwrite BucketType
 
-    Available BucketType's:
-        user
+    Available BucketType's: user
 
     more BucketType's will be implemented soon in further updates
     """
