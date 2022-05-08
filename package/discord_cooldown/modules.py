@@ -3,9 +3,29 @@ import sqlite3
 import mysql.connector as mysql
 import psycopg2
 
-from typing import Optional, Union, Tuple
+import threading
+import asyncio
+from typing import Optional, Union, List, Tuple, Callable, Any
 from datetime import datetime
 from discord.ext.commands import BucketType
+
+
+def run_async(target: Callable, *args, **kwargs) -> Optional[Any]:
+    class RunThread(threading.Thread):
+        def __init__(self, func: Callable):
+            self.func = func
+            self.args = args
+            self.kwargs = kwargs
+            self.result = None
+            super().__init__()
+
+        def run(self):
+            self.result = asyncio.run(self.func(*self.args, **self.kwargs))
+
+    thread = RunThread(target)
+    thread.start()
+    thread.join()
+    return thread.result
 
 
 class SQlite:
@@ -88,7 +108,7 @@ class CooldownsDB:
         db.close()
 
     async def open_cd(self, user: Union[discord.Member, discord.Guild]):
-        await self.update_cooldowns()
+        run_async(self.update_cooldowns)
 
         db = self.database.connector()
         cursor = db.cursor()
@@ -116,34 +136,31 @@ class CooldownsDB:
         db.close()
 
     async def get_cd(self, user: Union[discord.Member, discord.Guild],
-                     mode: str) -> Optional[Tuple[int, int, datetime]]:
-        await self.open_cd(user)
-        await self.add_column(mode)
-
+                     mode: str) -> Optional[Tuple[int, int, Optional[datetime]]]:
         db = self.database.connector()
         cursor = db.cursor()
 
         cursor.execute(f"SELECT `{mode}` FROM {self.table_name} WHERE userID = {user.id}")
-        data: Optional[str] = cursor.fetchone()[0]
+        data: Optional[str] = cursor.fetchone()
 
         cursor.close()
         db.close()
 
-        if data is None:
+        if data is None or data[0] is None:
             return None
 
-        CD = [mode_.strip() for mode_ in data.split(',', 3)]
+        CD: List = [mode_.strip() for mode_ in data[0].split(',', 3)]
         rate = int(CD[0])
         per = int(CD[1])
-        cooldown = datetime.strptime(CD[2], "%Y-%m-%d %H:%M:%S")
+        try:
+            cooldown = datetime.strptime(CD[2], "%Y-%m-%d %H:%M:%S")
+        except:
+            cooldown = None
 
         return rate, per, cooldown
 
     async def create_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int, per: int,
                         cooldown: str):
-        await self.open_cd(user)
-        await self.add_column(mode)
-
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -156,9 +173,6 @@ class CooldownsDB:
 
     async def update_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int = None,
                         per: int = None, cooldown: str = None):
-        await self.open_cd(user)
-        await self.add_column(mode)
-
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -187,9 +201,6 @@ class CooldownsDB:
         db.close()
 
     async def reset_cd(self, user: Union[discord.Member, discord.Guild], mode: str):
-        await self.open_cd(user)
-        await self.add_column(mode)
-
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -206,14 +217,14 @@ class BucketTypes(BucketType):
     Used to overwrite BucketType
 
     Available BucketType's:
-        user, guild
+        user
 
     more BucketType's will be implemented soon in further updates
     """
 
     # Available BucketType's
     user = BucketType.user
-    guild = BucketType.guild
+    guild = user
 
     # Will be implemented soon, it then their value will be overwritten to `BucketType.user`
     category = user
