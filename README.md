@@ -6,12 +6,17 @@
 
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
-[![Generic badge](https://img.shields.io/badge/Python-3.8-blue.svg)](https://shields.io/)
-[![GitHub license](https://badgen.net/github/license/Naereen/Strapdown.js)](https://github.com/Naereen/StrapDown.js/blob/master/LICENSE)
-[![Windows](https://svgshare.com/i/ZhY.svg)](https://svgshare.com/i/ZhY.svg)
-[![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg)
+[![CodeQL](https://github.com/Modern-Realm/discord_cooldown/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Modern-Realm/discord_cooldown/actions/workflows/codeql-analysis.yml)
+[![Python](https://img.shields.io/badge/Python-3.8-blue.svg)](https://www.python.org/)
+![Github License](https://img.shields.io/badge/license-MIT-blue)
+![Windows](https://img.shields.io/badge/os-windows-yellow)
+![Linux](https://img.shields.io/badge/os-linux-yellow)
 
-### Join [Official Discord Server](https://discord.gg/GVMWx5EaAN) for more guidance !
+[![GitHub stars](https://img.shields.io/github/stars/Modern-Realm/discord_cooldown?color=gold)](https://github.com/Modern-Realm/discord_cooldown/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Modern-Realm/discord_cooldown?color=%2332cd32)](https://github.com/Modern-Realm/discord_cooldown/network)
+[![GitHub issues](https://img.shields.io/github/issues/Modern-Realm/discord_cooldown?color=orange)](https://github.com/Modern-Realm/discord_cooldown/issues)
+
+#### Join [Official Discord Server](https://discord.gg/GVMWx5EaAN  "click to Join") for more guidance !
 
 <hr/>
 
@@ -19,7 +24,6 @@
 
 - Cooldowns of Bot commands are stored in a **DATABASE**
 - Available Databases **MySQL, PostgreSQL and Sqlite`(Sqlite3)`**
-- **asynchronous** functions are used throughout the module
 
 <hr/>
 
@@ -46,7 +50,8 @@ Python 3.8 or higher is required !
     pip install -U git+https://github.com/Modern-Realm/discord_cooldown
 ```
 
-**Note:** For better stability install package from [GitHub](https://github.com/Modern-Realm/discord_cooldown) using **`GIT`**
+**Note:** For better stability install package from [GitHub](https://github.com/Modern-Realm/discord_cooldown)
+using **`GIT`**
 
 <hr/>
 
@@ -72,52 +77,69 @@ Python 3.8 or higher is required !
 # QuickStart
 
 ```python
+from discord_cooldown.modules import MySQL
 from discord_cooldown.cooldown import Cooldown
-import discord
-from discord.ext import commands
 
+import discord
+
+from discord.ext import commands
+from datetime import timedelta
+
+TOKEN = ""
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="&", intents=intents)
+
+# MySQL Database Setup
+db = MySQL(
+    host="", db_name="",
+    user="", passwd=""
+)
+
+# For Indian timezone (UTC +5:30)
+timezone = +timedelta(hours=5, minutes=30)
+
+
+def CD():
+    return Cooldown(database=db, timezone=timezone)
 
 
 @client.event
 async def on_ready():
-    print("Bot's online !")
+    await client.change_presence(status=discord.Status.online, activity=discord.Game("&help"))
+    print("Bot is online")
 
 
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        em = discord.Embed(description=f"This command is on cooldown\n"
-                                       f"Retry after `{error.retry_after}` seconds")
+        return await ctx.send(
+            f"on cooldown retry after `{timedelta(seconds=error.retry_after)}`"
+        )
+    else:
+        # For resetting a command on any error other than CommandOnCooldown
+        return await CD().reset_cooldown(ctx.author, ctx.command.name)
 
-        return await ctx.reply(embed=em, mention_author=False)
 
-
-@Cooldown().cooldown(1, 2 * 60)
+@CD().cooldown(1, 2 * 60)
 @client.command()
 async def test(ctx):
-    """
-    Returns an error: commands.CommandOnCooldown if it's on cooldown
-    """
-    await ctx.send("Hello world !")
+    await ctx.send("testing")
 
 
-@Cooldown().cooldown(1, 0, commands.BucketType.guild, reset_per_day=True)
-@client.command(aliases=['sf'])
-async def serverinfo(ctx):
-    guild = ctx.guild
-    em = discord.Embed(
-        title="Server Info",
-        description=f"Server Name: {guild.name}\n"
-                    f"Total Members: {guild.member_count}\n"
-                    f"Owner: {guild.owner.mention}"
-    )
-
-    await ctx.reply(embed=em, mention_author=False)
+@CD().cooldown(2, 0, reset_per_day=True)
+@client.command()
+async def vote(ctx):
+    await ctx.send("done")
 
 
-client.run(TOKEN)
+@CD().cooldown(3, 60)
+@client.command()
+async def test1(ctx, *, msg: str):
+    await ctx.send("message is " + msg)
+
+
+if __name__ == "__main__":
+    client.run(TOKEN)
 ```
 
 <hr/>

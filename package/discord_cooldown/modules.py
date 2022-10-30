@@ -3,29 +3,9 @@ import sqlite3
 import mysql.connector as mysql
 import psycopg2
 
-import threading
-import asyncio
-from typing import Optional, Union, List, Tuple, Callable, Any
+from typing import Optional, Union, List, Tuple
 from datetime import datetime
 from discord.ext.commands import BucketType
-
-
-def run_async(target: Callable, *args, **kwargs) -> Optional[Any]:
-    class RunThread(threading.Thread):
-        def __init__(self, func: Callable):
-            self.func = func
-            self.args = args
-            self.kwargs = kwargs
-            self.result = None
-            super().__init__()
-
-        def run(self):
-            self.result = self.func(*self.args, **self.kwargs)
-
-    thread = RunThread(target)
-    thread.start()
-    thread.join()
-    return thread.result
 
 
 class SQlite:
@@ -38,7 +18,7 @@ class SQlite:
         """
 
         self.filename = "CustomCooldowns.db" if filename is None else filename
-        self.table_name = table_name
+        self.table_name = f"`{table_name}`"
 
         self.connector = lambda: sqlite3.connect(self.filename)
 
@@ -59,7 +39,7 @@ class MySQL:
         self.DB_NAME: str = db_name
         self.DB_USER: str = user
         self.DB_PASSWD: str = passwd
-        self.table_name = table_name
+        self.table_name = f"`{table_name}`"
 
         self.connector = lambda: mysql.connect(host=self.DB_HOST, user=self.DB_USER,
                                                passwd=self.DB_PASSWD, database=self.DB_NAME)
@@ -83,7 +63,7 @@ class PostgreSQL:
         self.DB_NAME: str = db_name
         self.DB_USER: str = user
         self.DB_PASSWD: str = passwd
-        self.table_name = table_name
+        self.table_name = f"`{table_name}`"
 
         self.connector = lambda: psycopg2.connect(host=self.DB_HOST, port=self.DB_PORT, user=self.DB_USER,
                                                   passwd=self.DB_PASSWD, database=self.DB_NAME)
@@ -97,7 +77,7 @@ class CooldownsDB:
             self.database = database
             self.table_name = database.table_name
 
-    def update_cooldowns(self):
+    async def update_cooldowns(self):
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -107,8 +87,8 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def open_cd(self, user: Union[discord.Member, discord.Guild]):
-        run_async(self.update_cooldowns)
+    async def open_cd(self, user: Union[discord.Member, discord.Guild]):
+        await self.update_cooldowns()
 
         db = self.database.connector()
         cursor = db.cursor()
@@ -122,7 +102,7 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def add_column(self, column_name: str):
+    async def add_column(self, column_name: str):
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -135,8 +115,8 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def get_cd(self, user: Union[discord.Member, discord.Guild],
-               mode: str) -> Optional[Tuple[int, int, Optional[datetime]]]:
+    async def get_cd(self, user: Union[discord.Member, discord.Guild],
+                     mode: str) -> Optional[Tuple[int, int, Optional[datetime]]]:
         db = self.database.connector()
         cursor = db.cursor()
 
@@ -159,25 +139,26 @@ class CooldownsDB:
 
         return rate, per, cooldown
 
-    def create_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int, per: int,
-                  cooldown: str):
+    async def create_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int, per: int,
+                        cooldown: str):
         db = self.database.connector()
         cursor = db.cursor()
 
         cursor.execute(
-            f"UPDATE {self.table_name} SET `{mode}` = '{', '.join([str(rate), str(per), str(cooldown)])}' WHERE userID = {user.id}")
+            f"UPDATE {self.table_name} SET `{mode}` = '{', '.join([str(rate), str(per), str(cooldown)])}' "
+            f"WHERE userID = {user.id}")
         db.commit()
 
         cursor.close()
         db.close()
 
-    def update_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int = None,
-                  per: int = None, cooldown: str = None):
+    async def update_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int = None,
+                        per: int = None, cooldown: str = None):
         db = self.database.connector()
         cursor = db.cursor()
 
         try:
-            cmd_rate, cmd_per, cmd_cd = run_async(self.get_cd, user, mode)
+            cmd_rate, cmd_per, cmd_cd = await self.get_cd(user, mode)
         except:
             cmd_rate = cmd_per = 0
             cmd_cd = None
@@ -200,12 +181,12 @@ class CooldownsDB:
         cursor.close()
         db.close()
 
-    def reset_cd(self, user: Union[discord.Member, discord.Guild], mode: str):
+    async def reset_cd(self, user: Union[discord.Member, discord.Guild], mode: str):
         db = self.database.connector()
         cursor = db.cursor()
 
         cursor.execute(
-            F"UPDATE {self.table_name} SET `{mode}` = NULL WHERE userID = {user.id}")
+            f"UPDATE {self.table_name} SET `{mode}` = NULL WHERE userID = {user.id}")
         db.commit()
 
         cursor.close()
@@ -214,8 +195,6 @@ class CooldownsDB:
 
 class BucketTypes(BucketType):
     """
-    Used to overwrite BucketType
-
     Available BucketType's: user
 
     more BucketType's will be implemented soon in further updates
@@ -223,10 +202,3 @@ class BucketTypes(BucketType):
 
     # Available BucketType's
     user = BucketType.user
-    guild = user
-
-    # Will be implemented soon, it then their value will be overwritten to `BucketType.user`
-    category = user
-    channel = user
-    role = user
-    member = user
