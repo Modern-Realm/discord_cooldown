@@ -13,7 +13,7 @@ class Cooldown:
     def __init__(self, database: Union[MySQL, SQlite, PostgreSQL] = SQlite(), *,
                  timezone: timedelta = timedelta(hours=0)):
         """
-        It overwrites commands.cooldown
+        It returns commands.cooldown
 
         For examples: https://github.com/Modern-Realm/discord_cooldown/tree/main/Examples
 
@@ -24,11 +24,11 @@ class Cooldown:
         """
 
         self.user: Optional[discord.Member] = None
-        self.rate: int = 0
-        self.per: float = 0
+        self.__rate: int = 0
+        self.__per: float = 0
         self.timezone = timezone
         self.reset: bool = False
-        self.type: Optional[BucketTypes] = None
+        self.__type: Optional[BucketTypes] = None
         self.db = database
         self.default_format: str = "%Y-%m-%d %H:%M:%S"
         self.command_name: Optional[str] = None
@@ -59,13 +59,13 @@ class Cooldown:
         :return: commands.check
         """
 
-        self.rate = rate
-        self.per = per
-        self.type = type_
+        self.__rate = rate
+        self.__per = per
+        self.__type = type_
         self.reset = reset_per_day
 
         if self.reset:
-            self.per = 24 * 60 * 60
+            self.__per = 24 * 60 * 60
 
         async def predicate(context) -> bool:
             self.user = context.author
@@ -85,47 +85,47 @@ class Cooldown:
             cur_time = (datetime.utcnow() + self.timezone).replace(microsecond=0)
             if cur_time > cmd_cd:
                 await self.CD.reset_cd(self.user, self.command_name)
-                await self._set_CD()
-                await self.CD.update_cd(self.user, self.command_name, per=+1)
+                await self._set_CD(per=+1)
                 return True
             else:
-                if cmd_per < cmd_rate:
+                if cmd_per + 1 == cmd_rate:
+                    if self.reset:
+                        cur_time = (datetime.utcnow() + self.timezone).replace(microsecond=0)
+                        cd_time_ = (cur_time + timedelta(days=1)).replace(
+                            hour=0, minute=0, second=0, microsecond=0
+                        )
+                        cd_time = cd_time_.strftime(self.default_format)
+                    else:
+                        cur_time = (datetime.utcnow() + self.timezone).replace(microsecond=0)
+                        cd_time_ = cur_time + timedelta(seconds=self.__per)
+                        cd_time = cd_time_.strftime(self.default_format)
+                    await self.CD.update_cd(self.user, self.command_name, per=+1, cooldown=cd_time)
+                    return True
+                elif cmd_per < cmd_rate:
                     await self.CD.update_cd(self.user, self.command_name, per=+1)
                     return True
-                else:
-                    if cmd_per == cmd_rate:
-                        if self.reset:
-                            cur_time = (datetime.utcnow() + self.timezone).replace(microsecond=0)
-                            cd_time_ = (cur_time + timedelta(days=1)).replace(
-                                hour=0, minute=0, second=0, microsecond=0)
-                            cd_time = cd_time_.strftime(self.default_format)
-                        else:
-                            cur_time = (datetime.utcnow() + self.timezone).replace(microsecond=0)
-                            cd_time_ = cur_time + timedelta(seconds=self.per)
-                            cd_time = cd_time_.strftime(self.default_format)
-                        await self.CD.update_cd(self.user, self.command_name, per=+1, cooldown=cd_time)
 
-                    cmd_rate, cmd_per, cmd_cd = await self.CD.get_cd(self.user, self.command_name)
-                    left_time = (cmd_cd - cur_time).total_seconds()
-                    raise commands.CommandOnCooldown(
-                        cooldown=cooldowns.Cooldown(self.rate, self.per),
-                        retry_after=int(round(left_time, 0)),
-                        type=self.type
-                    )
+                cmd_rate, cmd_per, cmd_cd = await self.CD.get_cd(self.user, self.command_name)
+                left_time = (cmd_cd - cur_time).total_seconds()
+                raise commands.CommandOnCooldown(
+                    cooldown=cooldowns.Cooldown(self.__rate, self.__per),
+                    retry_after=int(round(left_time, 0)),
+                    type=self.__type
+                )
 
         return commands.check(predicate)
 
-    async def _set_CD(self) -> Tuple[int, int, datetime]:
+    async def _set_CD(self, /, per: int = 0) -> Tuple[int, int, datetime]:
         cur_time = (datetime.utcnow() + self.timezone).replace(microsecond=0)
         if self.reset:
             cd_time_ = (cur_time + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
         else:
-            cd_time_ = cur_time + timedelta(seconds=self.per)
+            cd_time_ = cur_time + timedelta(seconds=self.__per)
 
         await self.CD.create_cd(self.user, self.command_name,
-                                rate=self.rate, per=0, cooldown=cd_time_.strftime(self.default_format))
+                                rate=self.__rate, per=per, cooldown=cd_time_.strftime(self.default_format))
 
-        return self.rate, 0, cd_time_
+        return self.__rate, per, cd_time_
 
     async def reset_cooldown(self, user: discord.Member, command_name: str) -> None:
         await self.CD.reset_cd(user, command_name)

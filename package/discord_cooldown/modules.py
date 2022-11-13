@@ -20,11 +20,13 @@ class SQlite:
         self.filename = "CustomCooldowns.db" if filename is None else filename
         self.table_name = f"`{table_name}`"
 
+        self.fmtr: str = "?"
         self.connector = lambda: sqlite3.connect(self.filename)
 
 
 class MySQL:
-    def __init__(self, host: str, db_name: str, user: str, passwd: str, *, table_name: str = "cooldowns"):
+    def __init__(self, host: str, db_name: str, user: str, passwd: str, *,
+                 port: int = 3306, table_name: str = "cooldowns"):
         """
         Use this to store the cooldown commands data in MySQL database
 
@@ -35,18 +37,21 @@ class MySQL:
         :param table_name: By default it's cooldowns, if provided the table will be created with the given name
         """
 
-        self.DB_HOST: str = host
-        self.DB_NAME: str = db_name
-        self.DB_USER: str = user
-        self.DB_PASSWD: str = passwd
+        self.DB_HOST = host
+        self.DB_PORT = port
+        self.DB_NAME = db_name
+        self.DB_USER = user
+        self.DB_PASSWD = passwd
         self.table_name = f"`{table_name}`"
 
+        self.fmtr: str = "%s"
         self.connector = lambda: mysql.connect(host=self.DB_HOST, user=self.DB_USER,
                                                passwd=self.DB_PASSWD, database=self.DB_NAME)
 
 
 class PostgreSQL:
-    def __init__(self, host: str, db_name: str, user: str, passwd: str, port: str, *, table_name: str = "cooldowns"):
+    def __init__(self, host: str, db_name: str, user: str, passwd: str, port: int = 5432, *,
+                 table_name: str = "cooldowns"):
         """
         Use this to store the cooldown commands data in PostgreSQL database
 
@@ -58,13 +63,14 @@ class PostgreSQL:
         :param table_name: By default it's cooldowns, if provided the table will be created with the given name
         """
 
-        self.DB_HOST: str = host
-        self.DB_PORT: str = port
-        self.DB_NAME: str = db_name
-        self.DB_USER: str = user
-        self.DB_PASSWD: str = passwd
+        self.DB_HOST = host
+        self.DB_PORT = port
+        self.DB_NAME = db_name
+        self.DB_USER = user
+        self.DB_PASSWD = passwd
         self.table_name = f"`{table_name}`"
 
+        self.fmtr: str = "%s"
         self.connector = lambda: psycopg2.connect(host=self.DB_HOST, port=self.DB_PORT, user=self.DB_USER,
                                                   passwd=self.DB_PASSWD, database=self.DB_NAME)
 
@@ -90,13 +96,21 @@ class CooldownsDB:
     async def open_cd(self, user: Union[discord.Member, discord.Guild]):
         await self.update_cooldowns()
 
-        db = self.database.connector()
+        database = self.database
+        fmtr = database.fmtr
+        db = database.connector()
         cursor = db.cursor()
 
-        cursor.execute(f"SELECT * FROM {self.table_name} WHERE userID = {user.id}")
+        cursor.execute(
+            f"SELECT * FROM {self.table_name} WHERE userID = {fmtr}",
+            (user.id,)
+        )
         data = cursor.fetchone()
         if data is None:
-            cursor.execute(f"INSERT INTO {self.table_name}(userID) VALUES({user.id})")
+            cursor.execute(
+                f"INSERT INTO {self.table_name}(userID) VALUES({fmtr})",
+                (user.id,)
+            )
             db.commit()
 
         cursor.close()
@@ -117,10 +131,15 @@ class CooldownsDB:
 
     async def get_cd(self, user: Union[discord.Member, discord.Guild],
                      mode: str) -> Optional[Tuple[int, int, Optional[datetime]]]:
-        db = self.database.connector()
+        database = self.database
+        fmtr = database.fmtr
+        db = database.connector()
         cursor = db.cursor()
 
-        cursor.execute(f"SELECT `{mode}` FROM {self.table_name} WHERE userID = {user.id}")
+        cursor.execute(
+            f"SELECT `{mode}` FROM {self.table_name} WHERE userID = {fmtr}",
+            (user.id,)
+        )
         data: Optional[str] = cursor.fetchone()
 
         cursor.close()
@@ -141,12 +160,15 @@ class CooldownsDB:
 
     async def create_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int, per: int,
                         cooldown: str):
-        db = self.database.connector()
+        database = self.database
+        fmtr = database.fmtr
+        db = database.connector()
         cursor = db.cursor()
 
         cursor.execute(
-            f"UPDATE {self.table_name} SET `{mode}` = '{', '.join([str(rate), str(per), str(cooldown)])}' "
-            f"WHERE userID = {user.id}")
+            f"UPDATE {self.table_name} SET `{mode}` = {fmtr} WHERE userID = {fmtr}",
+            (', '.join([str(rate), str(per), str(cooldown)]), user.id)
+        )
         db.commit()
 
         cursor.close()
@@ -154,7 +176,9 @@ class CooldownsDB:
 
     async def update_cd(self, user: Union[discord.Member, discord.Guild], mode: str, *, rate: int = None,
                         per: int = None, cooldown: str = None):
-        db = self.database.connector()
+        database = self.database
+        fmtr = database.fmtr
+        db = database.connector()
         cursor = db.cursor()
 
         try:
@@ -174,19 +198,24 @@ class CooldownsDB:
             cmd_cd = cooldown
 
         cursor.execute(
-            f"UPDATE {self.table_name} SET `{mode}` = '{', '.join([str(cmd_rate), str(cmd_per), str(cmd_cd)])}' "
-            f"WHERE userID = {user.id} ")
+            f"UPDATE {self.table_name} SET `{mode}` = {fmtr} "
+            f"WHERE userID = {fmtr}",
+            (', '.join([str(cmd_rate), str(cmd_per), str(cmd_cd)]), user.id))
         db.commit()
 
         cursor.close()
         db.close()
 
     async def reset_cd(self, user: Union[discord.Member, discord.Guild], mode: str):
-        db = self.database.connector()
+        database = self.database
+        fmtr = database.fmtr
+        db = database.connector()
         cursor = db.cursor()
 
         cursor.execute(
-            f"UPDATE {self.table_name} SET `{mode}` = NULL WHERE userID = {user.id}")
+            f"UPDATE {self.table_name} SET `{mode}` = NULL WHERE userID = {fmtr}",
+            (user.id,)
+        )
         db.commit()
 
         cursor.close()

@@ -13,4 +13,6 @@ __title__ = "discord-cooldown"
 __author__ = "P. Sai Keerthan reddy, Modern Realm"
 __license__ = "MIT"
 __copyright__ = "Copyright (c) 2022 skrphenix & Modern Realm"
-__version__ = "0.1.3"
+__version__ = "0.1.4"
+
+from .cooldown import Cooldown
