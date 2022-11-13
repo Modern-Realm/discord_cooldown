@@ -25,8 +25,8 @@ class SQlite:
 
 
 class MySQL:
-    def __init__(self, host: str, db_name: str, user: str, passwd: str, *,
-                 port: int = 3306, table_name: str = "cooldowns"):
+    def __init__(self, host: str, db_name: str, user: str, passwd: str, port: int = 3306, *,
+                 table_name: str = "cooldowns"):
         """
         Use this to store the cooldown commands data in MySQL database
 
@@ -45,7 +45,7 @@ class MySQL:
         self.table_name = f"`{table_name}`"
 
         self.fmtr: str = "%s"
-        self.connector = lambda: mysql.connect(host=self.DB_HOST, user=self.DB_USER,
+        self.connector = lambda: mysql.connect(host=self.DB_HOST, port=self.DB_PORT, user=self.DB_USER,
                                                passwd=self.DB_PASSWD, database=self.DB_NAME)
 
 

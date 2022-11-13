@@ -78,7 +78,7 @@ using **`GIT`**
 
 ```python
 from discord_cooldown.modules import MySQL
-from discord_cooldown.cooldown import Cooldown
+from discord_cooldown import Cooldown
 
 import discord
 
