@@ -19,6 +19,13 @@ Context = TypeVar("Context", commands.Context, discord.ApplicationContext)
 
 class Cooldown:
     def __init__(self, db_config: Union[SQlite, MySQL, PostgreSQL], timezone: timedelta = None):
+        """
+        Config for cooldown system
+
+        :param db_config: provide the database config which you want to use
+        :param timezone: the timedelta to use for cooldown, by default it uses UTC time
+        """
+
         db = Database(db_config)
         if not db.is_connected:
             db.connect()
