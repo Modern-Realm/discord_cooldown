@@ -270,7 +270,7 @@ class Cooldown:
         ...
 
     @overload
-    def cooldown(self, rate: int, *, reset_per_day: bool, role_id: int,
+    def cooldown(self, rate: int, *, reset_per_day: bool, role_id: int = None,
                  type: BucketType = BucketType.user) -> commands.check:
         ...
 

@@ -62,8 +62,6 @@ using **`GIT`**
 - ## [py-cord](https://github.com/Pycord-Development/pycord)
 - ## [nextcord](https://github.com/nextcord/nextcord)
 - ## [discord.pyV2.0](https://github.com/Rapptz/discord.py)
-- ## [disnake](https://github.com/DisnakeDev/disnake)
-  `For disnake you should Refactor/ Shim all discord terms to disnake terms to make Package work`
 
 > <b>Note:</b> Don't install more than one **DEPENDENCY !**
 
@@ -77,69 +75,93 @@ using **`GIT`**
 # QuickStart
 
 ```python
-from discord_cooldown.modules import MySQL
-from discord_cooldown import Cooldown
+from discord_cooldown import Cooldown, SQlite, MySQL, PostgreSQL
 
 import discord
 
-from discord.ext import commands
 from datetime import timedelta
+from discord.ext import commands
+from os import getenv
 
-TOKEN = ""
+token = getenv("TOKEN")
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix="&", intents=intents)
-
-# MySQL Database Setup
-db = MySQL(
-    host="", db_name="",
-    user="", passwd=""
-)
+client = commands.Bot(command_prefix="$", intents=intents)
 
 # For Indian timezone (UTC +5:30)
 timezone = +timedelta(hours=5, minutes=30)
 
+# For sqlite
+db = SQlite()
 
-def CD():
-    return Cooldown(database=db, timezone=timezone)
+# For mysql
+# db = MySQL(host=..., port=..., user=..., passwd=..., db_name=...)
+
+# For postgresql
+# db = PostgreSQL(host=..., port=..., user=..., passwd=..., db_name=...)
+
+CD = Cooldown(db, timezone)
 
 
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.online, activity=discord.Game("&help"))
+    await client.change_presence(status=discord.Status.online, activity=discord.Game("$help"))
     print("Bot is online")
 
 
 @client.event
-async def on_command_error(ctx, error):
+async def on_application_command_error(ctx: discord.ApplicationContext, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        return await ctx.respond(
+            f"on cooldown retry after `{timedelta(seconds=error.retry_after)}`",
+            ephemeral=True
+        )
+
+    else:
+        # For resetting a command cooldown if any error occurred
+        return await CD.reset_cooldown(ctx)
+
+
+@client.event
+async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, commands.CommandOnCooldown):
         return await ctx.send(
             f"on cooldown retry after `{timedelta(seconds=error.retry_after)}`"
         )
+
     else:
-        # For resetting a command on any error other than CommandOnCooldown
-        return await CD().reset_cooldown(ctx.author, ctx.command.name)
+        # For resetting a command cooldown if any error occurred
+        return await CD.reset_cooldown(ctx)
 
 
-@CD().cooldown(1, 2 * 60)
+@CD.cooldown(2, 1 * 60, type=commands.BucketType.channel)
 @client.command()
 async def test(ctx):
     await ctx.send("testing")
 
 
-@CD().cooldown(2, 0, reset_per_day=True)
+@CD.cooldown(3, 3 * 60, type=commands.BucketType.channel)
+@client.slash_command()
+async def slash_test(ctx):
+    await ctx.respond("slash command")
+
+
+@CD.cooldown(1, reset_per_day=True, type=commands.BucketType.guild)
 @client.command()
 async def vote(ctx):
     await ctx.send("done")
 
 
-@CD().cooldown(3, 60)
+@CD.cooldown(2, 60)
 @client.command()
-async def test1(ctx, *, msg: str):
+async def test1(ctx, msg: str):
+    if msg is None:
+        raise ValueError("msg is missing, cooldown not triggered")
+
     await ctx.send("message is " + msg)
 
 
 if __name__ == "__main__":
-    client.run(TOKEN)
+    client.run(token)
 ```
 
 <hr/>
