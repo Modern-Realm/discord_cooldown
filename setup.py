@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
-with open("package/discord_cooldown/__init__.py") as f:
+with open("discord_cooldown/__init__.py") as f:
     search_v = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE)
 
     if search_v is not None:
