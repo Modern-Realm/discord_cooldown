@@ -16,6 +16,11 @@ with open("package/discord_cooldown/__init__.py") as f:
         raise RuntimeError("Error occurred while installing !\n"
                            "go to https://github.com/Modern-Realm/discord_cooldown for more info ...")
 
+packages = [
+    "discord_cooldown",
+    "discord_cooldown.ext"
+]
+
 setuptools.setup(
     name="discord-cooldown",
     version=version,
@@ -48,8 +53,7 @@ setuptools.setup(
         "Typing :: Typed",
     ],
     license="MIT",
-    package_dir={"": "package"},
-    packages=["discord_cooldown"],
+    packages=packages,
     include_package_data=True,
     install_requires=requirements,
     python_requires=">=3.8"

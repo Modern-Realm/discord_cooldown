@@ -10,9 +10,10 @@ Short Description:
 """
 
 __title__ = "discord-cooldown"
-__author__ = "P. Sai Keerthan reddy, Modern Realm"
+__author__ = "P. Sai Keerthan reddy"
 __license__ = "MIT"
-__copyright__ = "Copyright (c) 2022 skrphenix & Modern Realm"
-__version__ = "0.1.4"
+__copyright__ = "Copyright (c) 2023 skrphenix"
+__version__ = "0.1.5"
 
+from .modules import SQlite, MySQL, PostgreSQL
 from .cooldown import Cooldown
