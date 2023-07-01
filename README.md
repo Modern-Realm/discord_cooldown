@@ -74,6 +74,9 @@ using **`GIT`**
 
 # QuickStart
 
+To use `discord_cooldown` in cogs or multiple files, go through the template:
+[cooldown-bot-template](https://github.com/Modern-Realm/cooldown-bot-template)
+
 ```python
 from discord_cooldown import Cooldown, SQlite, MySQL, PostgreSQL
 
@@ -139,8 +142,8 @@ async def test(ctx):
     await ctx.send("testing")
 
 
-@CD.cooldown(3, 3 * 60, type=commands.BucketType.channel)
 @client.slash_command()
+@CD.cooldown(3, 3 * 60, type=commands.BucketType.channel)
 async def slash_test(ctx):
     await ctx.respond("slash command")
 
@@ -166,10 +169,11 @@ if __name__ == "__main__":
 
 <hr/>
 
-# Project Links
+# Useful Links
 
 You can get support/help/guidance from below social-media links
 
 - [Home Page](https://github.com/Modern-Realm)
 - [Official Discord Server](https://discord.gg/GVMWx5EaAN)
 - [PyPi Package](https://pypi.org/project/discord-cooldown/)
+- [CONTRIBUTING.md](https://github.com/Modern-Realm/discord_cooldown/blob/main/.github/CONTRIBUTING.md)
