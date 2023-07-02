@@ -14,7 +14,7 @@ __all__ = [
     "Cooldown"
 ]
 
-Context = TypeVar("Context", commands.Context, discord.ApplicationContext)
+Context = TypeVar("Context", bound=Any)
 
 
 class Cooldown:
@@ -43,8 +43,9 @@ class Cooldown:
         command_name = context.command.name
         await self.cd.users.add_column(command_name)
 
-        user = context.author
-        if isinstance(context, discord.ApplicationContext):
+        try:
+            user = context.author
+        except:
             user = context.user
 
         cd = await self.cd.users.get_cooldown(user, command_name)
@@ -85,8 +86,9 @@ class Cooldown:
         command_name = context.command.name
         await self.cd.guilds.add_column(command_name)
 
-        user = context.author
-        if isinstance(context, discord.ApplicationContext):
+        try:
+            user = context.author
+        except:
             user = context.user
 
         guild = context.guild
@@ -133,8 +135,9 @@ class Cooldown:
         command_name = context.command.name
         await self.cd.channels.add_column(command_name)
 
-        user = context.author
-        if isinstance(context, discord.ApplicationContext):
+        try:
+            user = context.author
+        except:
             user = context.user
 
         channel = context.channel
@@ -181,8 +184,9 @@ class Cooldown:
         command_name = context.command.name
         await self.cd.categories.add_column(command_name)
 
-        user = context.author
-        if isinstance(context, discord.ApplicationContext):
+        try:
+            user = context.author
+        except:
             user = context.user
 
         category = context.channel.category
@@ -230,8 +234,9 @@ class Cooldown:
         command_name = context.command.name
         await self.cd.roles.add_column(command_name)
 
-        user = context.author
-        if isinstance(context, discord.ApplicationContext):
+        try:
+            user = context.author
+        except:
             user = context.user
 
         role = context.guild.get_role(role_id)
@@ -319,7 +324,7 @@ class Cooldown:
         if type == BucketType.role and role_id is None:
             raise ValueError("Excepted role_id for type:`commands.BucketType.role` got None instead")
 
-        async def predicate(context: Union[commands.Context, discord.ApplicationContext]) -> bool:
+        async def predicate(context: Context) -> bool:
             self._cooldowns[context.command.name] = {
                 "rate": rate, "per": per, "type": type, "role_id": role_id
             }
@@ -358,8 +363,9 @@ class Cooldown:
         if cmd is None:
             return None
 
-        user = context.author
-        if isinstance(context, discord.ApplicationContext):
+        try:
+            user = context.author
+        except:
             user = context.user
 
         cmd_type = cmd["type"]
