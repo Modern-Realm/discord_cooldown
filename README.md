@@ -142,12 +142,6 @@ async def test(ctx):
     await ctx.send("testing")
 
 
-@client.slash_command()
-@CD.cooldown(3, 3 * 60, type=commands.BucketType.channel)
-async def slash_test(ctx):
-    await ctx.respond("slash command")
-
-
 @CD.cooldown(1, reset_per_day=True, type=commands.BucketType.guild)
 @client.command()
 async def vote(ctx):
